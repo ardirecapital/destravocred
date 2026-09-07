@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARDIRE Capital — Crédito para pessoas e pequenos negócios</title>
+  <meta name="description" content="Crédito pessoal para CLT e INSS, capital de giro e crédito com garantia de veículo. Atendimento em Franca e região.">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#inicio" aria-label="ARDIRE Capital">
+        <span class="brand-mark">A</span>
+        <span><strong>ARDIRE</strong><small>CAPITAL</small></span>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+
+      <nav id="mainNav">
+        <a href="#produtos">Para você</a>
+        <a href="#empresas">Para empresas</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#ajuda">Ajuda</a>
+      </nav>
+
+      <button class="btn btn-primary desktop-cta" data-open-product="clt">
+        Simule seu crédito
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">ARDIRE CAPITAL</p>
+          <h1>Crédito para destravar seus planos.</h1>
+          <p class="hero-copy">
+            Soluções de crédito para pessoas e pequenos negócios, com análise simples,
+            contratação segura e atendimento próximo.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" data-open-product="clt">Simule seu crédito</button>
+            <a class="btn btn-secondary btn-lg" href="#produtos">Conheça as opções</a>
+          </div>
+
+          <div class="trust-row">
+            <span>Análise individual</span>
+            <span>Contratação digital</span>
+            <span>Franca e região</span>
+          </div>
+        </div>
+
+        <div class="hero-simulator">
+          <p class="eyebrow">SIMULAÇÃO RÁPIDA</p>
+          <h2>De quanto você precisa?</h2>
+
+          <div class="product-tabs" role="tablist">
+            <button class="tab active" data-quick-product="clt">CLT</button>
+            <button class="tab" data-quick-product="inss">INSS</button>
+            <button class="tab" data-quick-product="giro">Giro</button>
+            <button class="tab" data-quick-product="veiculo">Veículo</button>
+          </div>
+
+          <div class="money-value" id="quickAmountLabel">R$ 500</div>
+          <input id="quickAmount" type="range" min="500" max="2000" step="100" value="500">
+          <div class="range-labels">
+            <span id="quickMin">R$ 500</span>
+            <span id="quickMax">R$ 2.000</span>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="quickSimulate">
+            Simule agora
+          </button>
+          <small>Crédito sujeito à análise e aprovação.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="produtos">
+      <div class="container">
+        <p class="eyebrow">PARA VOCÊ</p>
+        <h2>Encontre o crédito adequado para o seu momento</h2>
+
+        <div class="cards three">
+          <article class="product-card">
+            <span class="pill">CLT</span>
+            <h3>Crédito Pessoal para CLT</h3>
+            <p class="big">De R$ 500 a R$ 2.000</p>
+            <p>Para quem está registrado há pelo menos 6 meses no emprego atual.</p>
+            <ul>
+              <li>Atendimento em Franca e raio de até 50 km</li>
+              <li>Negativados também podem solicitar</li>
+              <li>Análise individual</li>
+            </ul>
+            <button class="text-link" data-open-product="clt">Simular crédito →</button>
+          </article>
+
+          <article class="product-card">
+            <span class="pill">INSS</span>
+            <h3>Crédito Pessoal INSS</h3>
+            <p class="big">Até R$ 2.000</p>
+            <p>Para aposentados e pensionistas, com análise da renda do benefício.</p>
+            <ul>
+              <li>Atendimento em Franca e raio de até 50 km</li>
+              <li>Representante legal pode solicitar</li>
+              <li>Não é consignado</li>
+            </ul>
+            <button class="text-link" data-open-product="inss">Simular crédito →</button>
+          </article>
+
+          <article class="product-card">
+            <span class="pill">VEÍCULO</span>
+            <h3>Crédito com Garantia de Veículo</h3>
+            <p class="big">Até R$ 30.000</p>
+            <p>Use seu veículo como garantia para acessar valores maiores.</p>
+            <ul>
+              <li>Até 36 meses para pagar</li>
+              <li>Você continua usando o veículo</li>
+              <li>Condições definidas após análise</li>
+            </ul>
+            <button class="text-link" data-open-product="veiculo">Simular crédito →</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="empresas">
+      <div class="container split">
+        <div>
+          <p class="eyebrow">PARA EMPRESAS</p>
+          <h2>Capital de giro para pequenos negócios</h2>
+          <p class="lead">
+            Crédito para MEIs e pequenas empresas que precisam reforçar o caixa e manter o negócio em movimento.
+          </p>
+
+          <div class="feature-grid">
+            <div>
+              <strong>R$ 1 mil a R$ 5 mil</strong>
+              <span>Ticket inicial do produto</span>
+            </div>
+            <div>
+              <strong>CNPJ a partir de 6 meses</strong>
+              <span>Pré-requisito para análise</span>
+            </div>
+            <div>
+              <strong>Vendas em maquininha</strong>
+              <span>Faturamento recorrente ajuda na análise</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" data-open-product="giro">Simular capital de giro</button>
+        </div>
+
+        <div class="panel">
+          <h3>Documentos para análise</h3>
+          <ul class="document-list">
+            <li>RG ou CNH do sócio</li>
+            <li>Comprovante de residência</li>
+            <li>Extratos bancários PJ dos últimos 3 meses</li>
+            <li>Cartão CNPJ</li>
+            <li>Comprovante de endereço da empresa</li>
+            <li>Foto da fachada da empresa</li>
+          </ul>
+          <p class="note">A primeira operação pode exigir visita de validação.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="como-funciona">
+      <div class="container">
+        <p class="eyebrow light">COMO FUNCIONA</p>
+        <h2>Experiência simples para contratar seu crédito</h2>
+        <p class="lead muted">As etapas podem variar conforme o produto e o resultado da análise.</p>
+
+        <div class="steps">
+          <article>
+            <span>1</span>
+            <h3>Simulação</h3>
+            <p>Escolha o produto, informe o valor desejado e seus dados básicos.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>Pré-análise</h3>
+            <p>O sistema verifica os requisitos iniciais antes de solicitar documentos.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>Documentos</h3>
+            <p>Envie os documentos necessários diretamente pelo site.</p>
+          </article>
+          <article>
+            <span>4</span>
+            <h3>Contratação</h3>
+            <p>Após aprovação, confira as condições, assine digitalmente e conclua a operação.</p>
+          </article>
+        </div>
+
+        <button class="btn btn-primary" data-open-product="clt">Simule grátis</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">CRÉDITO PESSOAL CLT</p>
+        <h2>O que você precisa para solicitar</h2>
+
+        <div class="requirements-grid">
+          <div class="requirement-highlight">
+            <strong>Carteira assinada há pelo menos 6 meses</strong>
+            <p>E residir em Franca/SP ou em localidade dentro de um raio de até 50 km.</p>
+          </div>
+
+          <div class="panel">
+            <h3>Tenha em mãos</h3>
+            <ul class="document-list">
+              <li>RG ou CNH</li>
+              <li>Comprovante de residência</li>
+              <li>Holerite</li>
+              <li>Extratos bancários dos últimos 3 meses</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="note">
+          Está negativado? Você também pode solicitar. Toda operação está sujeita à análise e aprovação.
+        </p>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="container">
+        <p class="eyebrow">CRÉDITO PESSOAL INSS</p>
+        <h2>Documentação para análise</h2>
+
+        <div class="requirements-grid">
+          <div class="requirement-highlight">
+            <strong>Atendimento local</strong>
+            <p>Disponível para Franca/SP e localidades em um raio de até 50 km.</p>
+          </div>
+
+          <div class="panel">
+            <h3>Tenha em mãos</h3>
+            <ul class="document-list">
+              <li>RG ou CNH</li>
+              <li>Comprovante de residência</li>
+              <li>Extrato do benefício do INSS</li>
+              <li>Se houver representante: documentos do representante e comprovação da representação</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">GARANTIA DE VEÍCULO</p>
+        <h2>Seu veículo pode abrir caminho para um crédito maior</h2>
+
+        <div class="cards four compact">
+          <article>
+            <h3>Até R$ 30 mil</h3>
+            <p>O valor disponível depende da análise do perfil e do veículo.</p>
+          </article>
+          <article>
+            <h3>Até 36 meses</h3>
+            <p>Mais prazo para organizar as parcelas de acordo com as condições aprovadas.</p>
+          </article>
+          <article>
+            <h3>Continue usando o carro</h3>
+            <p>O veículo permanece com você durante o contrato, observadas as condições da operação.</p>
+          </article>
+          <article>
+            <h3>Análise individual</h3>
+            <p>As condições são definidas após avaliação do cliente, documentação e veículo.</p>
+          </article>
+        </div>
+
+        <button class="btn btn-primary" data-open-product="veiculo">Simule agora</button>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="ajuda">
+      <div class="container">
+        <p class="eyebrow">AJUDA</p>
+        <h2>Perguntas frequentes</h2>
+
+        <div class="faq">
+          <details>
+            <summary>A simulação garante aprovação?</summary>
+            <p>Não. Toda solicitação passa por análise e as condições finais dependem do perfil e do produto.</p>
+          </details>
+          <details>
+            <summary>Posso solicitar estando negativado?</summary>
+            <p>No Crédito Pessoal CLT, negativados também podem solicitar. Isso não significa aprovação automática.</p>
+          </details>
+          <details>
+            <summary>Por que a ARDIRE pede documentos?</summary>
+            <p>Os documentos são utilizados para confirmar identidade, renda, endereço e as informações necessárias à análise da operação.</p>
+          </details>
+          <details>
+            <summary>Vocês atendem todo o Brasil?</summary>
+            <p>Os produtos CLT e INSS estão configurados inicialmente para Franca/SP e localidades em um raio de até 50 km.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div class="container">
+        <div>
+          <p class="eyebrow light">COMECE AGORA</p>
+          <h2>Faça sua simulação</h2>
+          <p>Leva poucos minutos para verificar se você atende aos requisitos iniciais.</p>
+        </div>
+        <button class="btn btn-light btn-lg" data-open-product="clt">Simule seu crédito</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <div class="brand footer-brand">
+          <span class="brand-mark">A</span>
+          <span><strong>ARDIRE</strong><small>CAPITAL</small></span>
+        </div>
+        <p>Soluções de crédito para pessoas e pequenos negócios.</p>
+      </div>
+
+      <div>
+        <strong>Produtos</strong>
+        <a href="#" data-open-product="clt">Crédito CLT</a>
+        <a href="#" data-open-product="inss">Crédito INSS</a>
+        <a href="#" data-open-product="giro">Capital de Giro</a>
+        <a href="#" data-open-product="veiculo">Garantia de Veículo</a>
+      </div>
+
+      <div>
+        <strong>Legal</strong>
+        <a href="#privacidade">Política de privacidade</a>
+        <a href="#termos">Termos de uso</a>
+        <p class="note">
+          Crédito sujeito à análise e aprovação. Valores, prazos e demais condições variam conforme o perfil e o produto.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop hidden" id="simulatorModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <button class="modal-close" id="modalClose" aria-label="Fechar">×</button>
+
+      <div class="modal-progress">
+        <span class="active" data-progress="1">1</span>
+        <span data-progress="2">2</span>
+        <span data-progress="3">3</span>
+      </div>
+
+      <form id="applicationForm" enctype="multipart/form-data">
+        <input type="hidden" name="product" id="productField">
+        <input type="hidden" name="requestedAmount" id="requestedAmountField">
+        <input type="hidden" name="consent" id="consentField" value="false">
+
+        <section class="form-step" data-step="1">
+          <p class="eyebrow">SIMULAÇÃO</p>
+          <h2 id="modalTitle">Crédito Pessoal CLT</h2>
+          <p id="modalSubtitle">Escolha o valor que deseja solicitar.</p>
+
+          <div class="money-value" id="modalAmountLabel">R$ 500</div>
+          <input id="modalAmount" type="range" min="500" max="2000" step="100" value="500">
+          <div class="range-labels">
+            <span id="modalMin">R$ 500</span>
+            <span id="modalMax">R$ 2.000</span>
+          </div>
+
+          <button type="button" class="btn btn-primary btn-block" id="toPreScreen">
+            Continuar
+          </button>
+        </section>
+
+        <section class="form-step hidden" data-step="2">
+          <p class="eyebrow">PRÉ-ANÁLISE</p>
+          <h2>Conte um pouco sobre você</h2>
+
+          <div class="form-grid">
+            <label>
+              Nome completo
+              <input name="fullName" autocomplete="name" required>
+            </label>
+
+            <label>
+              CPF
+              <input name="cpf" id="cpfInput" inputmode="numeric" maxlength="14" required>
+            </label>
+
+            <label>
+              Celular
+              <input name="phone" id="phoneInput" inputmode="tel" required>
+            </label>
+
+            <label>
+              E-mail
+              <input name="email" type="email" autocomplete="email">
+            </label>
+
+            <label>
+              CEP
+              <input name="cep" id="cepInput" inputmode="numeric" maxlength="9" required>
+            </label>
+
+            <label>
+              Cidade
+              <input id="cityDisplay" readonly placeholder="Preenchida pelo CEP">
+            </label>
+          </div>
+
+          <div id="dynamicFields"></div>
+
+          <div class="status-box hidden" id="preScreenStatus"></div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" data-back="1">Voltar</button>
+            <button type="button" class="btn btn-primary" id="runPreScreen">Verificar requisitos</button>
+          </div>
+        </section>
+
+        <section class="form-step hidden" data-step="3">
+          <p class="eyebrow">DOCUMENTOS</p>
+          <h2>Envie os documentos para análise</h2>
+          <p class="note">Formatos aceitos: PDF, JPG e PNG. Máximo de 10 MB por arquivo.</p>
+
+          <div id="documentFields" class="upload-grid"></div>
+
+          <label class="consent">
+            <input type="checkbox" id="privacyConsent" required>
+            <span>
+              Declaro que as informações são verdadeiras e autorizo o tratamento dos dados enviados para análise da solicitação, conforme a política de privacidade.
+            </span>
+          </label>
+
+          <div class="status-box hidden" id="submitStatus"></div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-secondary" data-back="2">Voltar</button>
+            <button type="submit" class="btn btn-primary" id="submitApplication">Enviar solicitação</button>
+          </div>
+        </section>
+      </form>
+    </div>
+  </div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
