@@ -1,7 +1,7 @@
 const products = {
   clt: {
     title: "Crédito Pessoal CLT",
-    subtitle: "Para trabalhadores com pelo menos 6 meses de registro no emprego atual.",
+    subtitle: "Para trabalhadores com pelo menos 4 meses de registro no emprego atual.",
     min: 500,
     max: 2000,
     step: 100
@@ -365,11 +365,11 @@ document.querySelector("#runPreScreen").addEventListener("click", async () => {
 
   if (selectedProduct === "clt") {
     const months = Number(fd.get("employmentMonths") || 0);
-    if (months < 6) {
+    if (months < 4) {
       setStatus(
         preScreenStatus,
         "error",
-        "No momento, não conseguimos seguir. Para o Crédito Pessoal CLT é necessário ter pelo menos 6 meses de registro no emprego atual."
+        "No momento, não conseguimos seguir. Para o Crédito Pessoal CLT é necessário ter pelo menos 4 meses de registro no emprego atual."
       );
       return;
     }
