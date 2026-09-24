@@ -15,9 +15,27 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
-const SERVICE_RADIUS_KM = Number(process.env.SERVICE_RADIUS_KM || 50);
+const SERVICE_RADIUS_KM = Number(process.env.SERVICE_RADIUS_KM || 20);
 const FRANCA_LAT = Number(process.env.FRANCA_LAT || -20.5386);
 const FRANCA_LON = Number(process.env.FRANCA_LON || -47.4008);
+
+const CREDIT_OPTIONS = {
+  clt: {
+    500: { 3: 250, 6: 160, 9: 135, 12: 115 },
+    1000: { 3: 495, 6: 315, 9: 265, 12: 225 },
+    1500: { 3: 745, 6: 470, 9: 395, 12: 340 },
+    2000: { 3: 990, 6: 625, 9: 525, 12: 450 }
+  },
+  inss: {
+    500: { 3: 250, 6: 160, 9: 135, 12: 115, 18: 110, 36: 85 },
+    1000: { 3: 495, 6: 315, 9: 265, 12: 225, 18: 220, 36: 170 },
+    1500: { 3: 745, 6: 470, 9: 395, 12: 340, 18: 330, 36: 255 },
+    2000: { 3: 990, 6: 625, 9: 525, 12: 450, 18: 440, 36: 340 }
+  },
+  bolsa: {
+    500: { 3: 250, 6: 160 }
+  }
+};
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -121,10 +139,21 @@ app.get("/api/cep/:cep", async (req, res) => {
   }
 });
 
+function getReferenceInstallment(product, requestedAmount, selectedTerm) {
+  const productOptions = CREDIT_OPTIONS[product];
+  if (!productOptions) return null;
+
+  const amountOptions = productOptions[requestedAmount];
+  if (!amountOptions) return null;
+
+  const installment = amountOptions[selectedTerm];
+  return Number.isFinite(Number(installment)) ? Number(installment) : null;
+}
+
 function validatePreScreen(body) {
   const product = body.product;
 
-  if (!["clt", "inss", "giro", "veiculo"].includes(product)) {
+  if (!Object.hasOwn(CREDIT_OPTIONS, product)) {
     return "Produto inválido.";
   }
 
@@ -133,20 +162,22 @@ function validatePreScreen(body) {
   }
 
   if (body.consent !== "true") {
-    return "É necessário aceitar a política de privacidade.";
+    return "É necessário aceitar os Termos de Uso e a Política de Privacidade.";
+  }
+
+  const requestedAmount = Number(body.requestedAmount || 0);
+  const selectedTerm = Number(body.selectedTerm || 0);
+  const installmentAmount = Number(body.installmentAmount || 0);
+  const referenceInstallment = getReferenceInstallment(product, requestedAmount, selectedTerm);
+
+  if (referenceInstallment === null || installmentAmount !== referenceInstallment) {
+    return "A opção de valor ou parcela selecionada não é válida. Faça a simulação novamente.";
   }
 
   if (product === "clt") {
     const months = Number(body.employmentMonths || 0);
     if (months < 4) {
       return "Para o Crédito Pessoal CLT é necessário ter pelo menos 4 meses de registro no emprego atual.";
-    }
-  }
-
-  if (product === "giro") {
-    const cnpjMonths = Number(body.cnpjMonths || 0);
-    if (cnpjMonths < 6) {
-      return "Para o Capital de Giro é necessário que o CNPJ tenha pelo menos 6 meses.";
     }
   }
 
@@ -166,19 +197,8 @@ function requiredFilesFor(product, body) {
     return base;
   }
 
-  if (product === "giro") {
-    return [
-      "identidade",
-      "residencia",
-      "extratosPJ",
-      "cartaoCNPJ",
-      "enderecoEmpresa",
-      "fachada"
-    ];
-  }
-
-  if (product === "veiculo") {
-    return ["identidade", "residencia", "crlv"];
+  if (product === "bolsa") {
+    return ["identidade", "residencia", "beneficio"];
   }
 
   return [];
@@ -241,9 +261,9 @@ app.post("/api/submit", upload.any(), async (req, res) => {
 
     const cepInfo = await lookupCEP(req.body.cep);
 
-    if (["clt", "inss"].includes(req.body.product) && !cepInfo.inServiceArea) {
+    if (!cepInfo.inServiceArea) {
       return res.status(400).json({
-        error: "Atualmente este produto está disponível para Franca/SP e localidades em um raio de até 50 km."
+        error: "Atualmente CLT, INSS e Bolsa Família estão disponíveis para Franca/SP e localidades em um raio de até 20 km."
       });
     }
 
@@ -259,12 +279,18 @@ app.post("/api/submit", upload.any(), async (req, res) => {
     }
 
     const submissionId = crypto.randomUUID();
+    const requestedAmount = Number(req.body.requestedAmount || 0);
+    const selectedTerm = Number(req.body.selectedTerm || 0);
+    const installmentAmount = Number(req.body.installmentAmount || 0);
 
     const payload = {
       submissionId,
       createdAt: new Date().toISOString(),
       product: req.body.product,
-      requestedAmount: Number(req.body.requestedAmount || 0),
+      requestedAmount,
+      selectedTerm,
+      installmentAmount,
+      installmentLabel: `${selectedTerm}x de R$ ${installmentAmount}`,
       fullName: req.body.fullName,
       cpf: req.body.cpf,
       phone: req.body.phone,
@@ -273,6 +299,7 @@ app.post("/api/submit", upload.any(), async (req, res) => {
       city: cepInfo.city,
       state: cepInfo.state,
       distanceKm: cepInfo.distanceKm,
+      serviceRadiusKm: SERVICE_RADIUS_KM,
       employmentMonths: req.body.employmentMonths || "",
       employer: req.body.employer || "",
       netIncome: req.body.netIncome || "",
@@ -281,11 +308,6 @@ app.post("/api/submit", upload.any(), async (req, res) => {
       benefitMonths: req.body.benefitMonths || "",
       benefitBank: req.body.benefitBank || "",
       isRepresentative: req.body.isRepresentative || "false",
-      cnpj: req.body.cnpj || "",
-      cnpjMonths: req.body.cnpjMonths || "",
-      cardSales: req.body.cardSales || "",
-      vehicleModel: req.body.vehicleModel || "",
-      vehicleYear: req.body.vehicleYear || "",
       consent: true,
       consentAcceptedAt: new Date().toISOString(),
       privacyPolicyVersion: "2026-09-24",
@@ -312,7 +334,7 @@ app.post("/api/submit", upload.any(), async (req, res) => {
     res.json({
       ok: true,
       submissionId,
-      message: "Solicitação enviada com sucesso."
+      message: "Solicitação recebida com sucesso."
     });
   } catch (error) {
     console.error(error);
