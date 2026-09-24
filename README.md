@@ -1,84 +1,63 @@
-# ARDIRE — Site de Crédito
+[README.md](https://github.com/user-attachments/files/32632052/README.md)
+# ARDIRE Capital / Destravo Cred — v6
 
-Projeto completo, pronto para subir em um repositório GitHub.
+Versão consolidada com integração direta do backend com Kommo e envio de propostas por e-mail.
 
-## O que já está implementado
+## Fluxo
 
-- Home institucional da ARDIRE.
-- Produtos:
-  - Crédito Pessoal para CLT — R$ 500 a R$ 2.000.
-  - Crédito Pessoal INSS — até R$ 2.000.
-  - Capital de Giro — R$ 1.000 a R$ 5.000.
-  - Crédito com Garantia de Veículo — até R$ 30.000 e até 36 meses.
-- Simulador por produto.
-- Pré-filtro automático.
-- CLT:
-  - mínimo de 6 meses no emprego atual;
-  - atendimento em Franca/SP e raio de até 50 km.
-- INSS:
-  - atendimento em Franca/SP e raio de até 50 km.
-- Giro:
-  - CNPJ com no mínimo 6 meses.
-- Upload de documentos.
-- Aceite de privacidade/LGPD.
-- Envio seguro pelo backend para um webhook n8n.
-- Validação de CEP e distância até Franca usando BrasilAPI.
-- Limite de 10 MB por arquivo.
-- Tipos aceitos: PDF, JPG, JPEG e PNG.
-- Rate limiting e headers de segurança.
+1. Cliente escolhe CLT, INSS ou Bolsa Família e simula a parcela.
+2. Ao concluir a pré-análise, o backend cria/atualiza o contato e cria um lead no Kommo na etapa **Pré-análise concluída**.
+3. Ao enviar os documentos, o mesmo lead vai para **Documentos recebidos**.
+4. Os arquivos são enviados ao Files API do Kommo e vinculados ao lead.
+5. O backend envia e-mail para `MAIL_TO` com os dados legíveis e, quando o pacote couber com segurança no e-mail, um ZIP organizado dos documentos.
+6. Se o ZIP ultrapassar 18 MB, o e-mail é enviado sem ZIP e informa que os documentos estão vinculados no Kommo.
 
-## Como rodar
+## Campos esperados no Kommo
 
-1. Instale Node.js 20 ou superior.
-2. No terminal:
+### Contato
+- CPF
+- Cidade
+- Telefone e E-mail são campos padrão do contato
 
-```bash
-npm install
-cp .env.example .env
-npm run dev
-```
+### Lead
+- Produto solicitado
+- Valor solicitado
+- Prazo escolhido
+- Valor da parcela
+- Renda / benefício
+- Empresa atual
+- Meses no emprego
+- Tipo de benefício
+- Resultado da pré-análise
+- Origem do lead
+- Data/hora da solicitação
+- Observações
 
-3. Abra:
+## Etapas esperadas no funil
 
-```text
-http://localhost:3000
-```
+- Nova solicitação
+- Pré-análise concluída
+- Aguardando documentos
+- Documentos recebidos
+- Em análise de crédito
+- Aprovado / Formalização
+- Fechado - ganho
+- Fechado - perdido
 
-## Integração com Kommo / n8n
+## Variáveis de ambiente
 
-A forma recomendada é:
+As credenciais nunca devem ser colocadas no GitHub. Configure-as somente no Render.
 
-Site -> backend -> webhook n8n -> Kommo
+- `KOMMO_SUBDOMAIN`
+- `KOMMO_ACCESS_TOKEN`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `MAIL_TO`
+- `MAIL_FROM`
 
-Nunca coloque token do Kommo diretamente no JavaScript do navegador.
+## Observação
 
-No arquivo `.env`, configure:
-
-```text
-N8N_WEBHOOK_URL=https://SEU-N8N/webhook/ardire-credito
-```
-
-O backend envia para esse webhook:
-- dados do cliente;
-- produto;
-- valor solicitado;
-- respostas da pré-análise;
-- CEP;
-- distância calculada;
-- documentos anexados.
-
-## GitHub
-
-Você pode subir a pasta inteira no GitHub.
-
-Este projeto possui backend Node/Express, então **GitHub Pages sozinho não executa o backend**. O repositório pode ficar no GitHub, mas o deploy completo deve ser feito em um serviço que execute Node.js, como Render, Railway, Fly.io, VPS ou outro servidor compatível.
-
-## Segurança
-
-Documentos pessoais não devem ser armazenados em um repositório GitHub.
-
-O modo `ALLOW_LOCAL_DEV_STORAGE=true` existe apenas para testes locais. Em produção, use o webhook n8n e armazenamento seguro, com controle de acesso, retenção definida e política de privacidade adequada.
-
-## Observação jurídica
-
-Os textos comerciais deste projeto evitam promessa de aprovação, taxa de juros fixa ou liberação garantida. Antes da publicação definitiva, revise os textos legais, política de privacidade, termos de uso e a identificação de parceiros responsáveis pela originação/contratação da operação.
+O backend localiza automaticamente IDs de campos, pipeline e etapas pelos nomes configurados no Kommo. Não é necessário gravar IDs no código.
