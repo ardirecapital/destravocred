@@ -2,30 +2,32 @@ const products = {
   clt: {
     title: "Crédito Pessoal CLT",
     subtitle: "Para trabalhadores com pelo menos 4 meses de registro no emprego atual.",
-    min: 500,
-    max: 2000,
-    step: 100
+    amounts: [500, 1000, 1500, 2000],
+    installments: {
+      500: [{ term: 3, amount: 250 }, { term: 6, amount: 160 }, { term: 9, amount: 135 }, { term: 12, amount: 115 }],
+      1000: [{ term: 3, amount: 495 }, { term: 6, amount: 315 }, { term: 9, amount: 265 }, { term: 12, amount: 225 }],
+      1500: [{ term: 3, amount: 745 }, { term: 6, amount: 470 }, { term: 9, amount: 395 }, { term: 12, amount: 340 }],
+      2000: [{ term: 3, amount: 990 }, { term: 6, amount: 625 }, { term: 9, amount: 525 }, { term: 12, amount: 450 }]
+    }
   },
   inss: {
     title: "Crédito Pessoal INSS",
-    subtitle: "Para aposentados e pensionistas atendidos em Franca e região.",
-    min: 500,
-    max: 2000,
-    step: 100
+    subtitle: "Para aposentados e pensionistas. Crédito pessoal não consignado.",
+    amounts: [500, 1000, 1500, 2000],
+    installments: {
+      500: [{ term: 3, amount: 250 }, { term: 6, amount: 160 }, { term: 9, amount: 135 }, { term: 12, amount: 115 }, { term: 18, amount: 110 }, { term: 36, amount: 85 }],
+      1000: [{ term: 3, amount: 495 }, { term: 6, amount: 315 }, { term: 9, amount: 265 }, { term: 12, amount: 225 }, { term: 18, amount: 220 }, { term: 36, amount: 170 }],
+      1500: [{ term: 3, amount: 745 }, { term: 6, amount: 470 }, { term: 9, amount: 395 }, { term: 12, amount: 340 }, { term: 18, amount: 330 }, { term: 36, amount: 255 }],
+      2000: [{ term: 3, amount: 990 }, { term: 6, amount: 625 }, { term: 9, amount: 525 }, { term: 12, amount: 450 }, { term: 18, amount: 440 }, { term: 36, amount: 340 }]
+    }
   },
-  giro: {
-    title: "Capital de Giro",
-    subtitle: "Para MEIs e pequenas empresas com CNPJ a partir de 6 meses.",
-    min: 1000,
-    max: 5000,
-    step: 500
-  },
-  veiculo: {
-    title: "Crédito com Garantia de Veículo",
-    subtitle: "Crédito de até R$ 30 mil, com prazo de até 36 meses, sujeito à análise.",
-    min: 5000,
-    max: 30000,
-    step: 1000
+  bolsa: {
+    title: "Crédito Bolsa Família",
+    subtitle: "Para beneficiários do Bolsa Família. Valor máximo de R$ 500.",
+    amounts: [500],
+    installments: {
+      500: [{ term: 3, amount: 250 }, { term: 6, amount: 160 }]
+    }
   }
 };
 
@@ -36,14 +38,17 @@ const currency = new Intl.NumberFormat("pt-BR", {
 });
 
 let quickProduct = "clt";
+let quickSelectedAmount = 500;
+let quickSelectedPlan = null;
 let selectedProduct = "clt";
+let modalSelectedAmount = 500;
+let modalSelectedPlan = null;
 let cepInfo = null;
 let preScreenApproved = false;
 
-const quickAmount = document.querySelector("#quickAmount");
-const quickAmountLabel = document.querySelector("#quickAmountLabel");
-const quickMin = document.querySelector("#quickMin");
-const quickMax = document.querySelector("#quickMax");
+const quickAmountOptions = document.querySelector("#quickAmountOptions");
+const quickPlanOptions = document.querySelector("#quickPlanOptions");
+const quickSimulationStatus = document.querySelector("#quickSimulationStatus");
 const quickSimulate = document.querySelector("#quickSimulate");
 
 const modal = document.querySelector("#simulatorModal");
@@ -51,12 +56,13 @@ const modalClose = document.querySelector("#modalClose");
 const applicationForm = document.querySelector("#applicationForm");
 const productField = document.querySelector("#productField");
 const requestedAmountField = document.querySelector("#requestedAmountField");
+const selectedTermField = document.querySelector("#selectedTermField");
+const installmentAmountField = document.querySelector("#installmentAmountField");
 const modalTitle = document.querySelector("#modalTitle");
 const modalSubtitle = document.querySelector("#modalSubtitle");
-const modalAmount = document.querySelector("#modalAmount");
-const modalAmountLabel = document.querySelector("#modalAmountLabel");
-const modalMin = document.querySelector("#modalMin");
-const modalMax = document.querySelector("#modalMax");
+const modalAmountOptions = document.querySelector("#modalAmountOptions");
+const modalPlanOptions = document.querySelector("#modalPlanOptions");
+const simulationStatus = document.querySelector("#simulationStatus");
 const dynamicFields = document.querySelector("#dynamicFields");
 const documentFields = document.querySelector("#documentFields");
 const preScreenStatus = document.querySelector("#preScreenStatus");
@@ -66,40 +72,96 @@ const consentField = document.querySelector("#consentField");
 const cepInput = document.querySelector("#cepInput");
 const cityDisplay = document.querySelector("#cityDisplay");
 
-function setupRange(range, label, minLabel, maxLabel, productKey, initialValue) {
-  const p = products[productKey];
-  range.min = p.min;
-  range.max = p.max;
-  range.step = p.step;
-  range.value = initialValue ?? p.min;
-  label.textContent = currency.format(Number(range.value));
-  minLabel.textContent = currency.format(p.min);
-  maxLabel.textContent = currency.format(p.max);
+function setStatus(element, type, message) {
+  element.className = `status-box ${type}`;
+  element.textContent = message;
+}
+
+function clearStatus(element) {
+  element.className = "status-box hidden";
+  element.textContent = "";
+}
+
+function createChoiceButton(label, active, onClick, extraClass = "") {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `choice-button ${extraClass}${active ? " active" : ""}`;
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function plansFor(productKey, amount) {
+  return products[productKey].installments[String(amount)] || products[productKey].installments[amount] || [];
+}
+
+function findPlan(productKey, amount, term) {
+  return plansFor(productKey, amount).find(plan => Number(plan.term) === Number(term)) || null;
+}
+
+function renderQuickSimulator() {
+  const product = products[quickProduct];
+
+  quickAmountOptions.innerHTML = "";
+  product.amounts.forEach(amount => {
+    quickAmountOptions.appendChild(
+      createChoiceButton(
+        currency.format(amount),
+        amount === quickSelectedAmount,
+        () => {
+          quickSelectedAmount = amount;
+          quickSelectedPlan = null;
+          clearStatus(quickSimulationStatus);
+          renderQuickSimulator();
+        },
+        "amount-choice"
+      )
+    );
+  });
+
+  quickPlanOptions.innerHTML = "";
+  plansFor(quickProduct, quickSelectedAmount).forEach(plan => {
+    const active = quickSelectedPlan?.term === plan.term && quickSelectedPlan?.amount === plan.amount;
+    quickPlanOptions.appendChild(
+      createChoiceButton(
+        `${plan.term}x de ${currency.format(plan.amount)}`,
+        active,
+        () => {
+          quickSelectedPlan = plan;
+          clearStatus(quickSimulationStatus);
+          renderQuickSimulator();
+        },
+        "plan-choice"
+      )
+    );
+  });
 }
 
 function updateQuickProduct(productKey) {
+  if (!products[productKey]) return;
   quickProduct = productKey;
+  quickSelectedAmount = products[productKey].amounts[0];
+  quickSelectedPlan = null;
+  clearStatus(quickSimulationStatus);
+
   document.querySelectorAll("[data-quick-product]").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.quickProduct === productKey);
   });
-  setupRange(quickAmount, quickAmountLabel, quickMin, quickMax, productKey);
+
+  renderQuickSimulator();
 }
 
 document.querySelectorAll("[data-quick-product]").forEach(btn => {
   btn.addEventListener("click", () => updateQuickProduct(btn.dataset.quickProduct));
 });
 
-quickAmount.addEventListener("input", () => {
-  quickAmountLabel.textContent = currency.format(Number(quickAmount.value));
-});
-
-modalAmount.addEventListener("input", () => {
-  modalAmountLabel.textContent = currency.format(Number(modalAmount.value));
-  requestedAmountField.value = modalAmount.value;
-});
-
 quickSimulate.addEventListener("click", () => {
-  openSimulator(quickProduct, Number(quickAmount.value));
+  if (!quickSelectedPlan) {
+    setStatus(quickSimulationStatus, "error", "Escolha uma opção de pagamento para continuar.");
+    return;
+  }
+
+  openSimulator(quickProduct, quickSelectedAmount, quickSelectedPlan.term);
 });
 
 document.querySelectorAll("[data-open-product]").forEach(btn => {
@@ -113,31 +175,82 @@ document.querySelector("#menuToggle").addEventListener("click", () => {
   document.querySelector("#mainNav").classList.toggle("open");
 });
 
-function openSimulator(productKey, amount) {
+function renderModalSimulation(preferredTerm = null) {
+  const product = products[selectedProduct];
+
+  modalAmountOptions.innerHTML = "";
+  product.amounts.forEach(amount => {
+    modalAmountOptions.appendChild(
+      createChoiceButton(
+        currency.format(amount),
+        amount === modalSelectedAmount,
+        () => {
+          modalSelectedAmount = amount;
+          modalSelectedPlan = null;
+          requestedAmountField.value = String(amount);
+          selectedTermField.value = "";
+          installmentAmountField.value = "";
+          clearStatus(simulationStatus);
+          renderModalSimulation();
+        },
+        "amount-choice"
+      )
+    );
+  });
+
+  modalPlanOptions.innerHTML = "";
+  const plans = plansFor(selectedProduct, modalSelectedAmount);
+
+  if (preferredTerm && !modalSelectedPlan) {
+    modalSelectedPlan = findPlan(selectedProduct, modalSelectedAmount, preferredTerm);
+  }
+
+  plans.forEach(plan => {
+    const active = modalSelectedPlan?.term === plan.term && modalSelectedPlan?.amount === plan.amount;
+    modalPlanOptions.appendChild(
+      createChoiceButton(
+        `${plan.term}x de ${currency.format(plan.amount)}`,
+        active,
+        () => {
+          modalSelectedPlan = plan;
+          selectedTermField.value = String(plan.term);
+          installmentAmountField.value = String(plan.amount);
+          clearStatus(simulationStatus);
+          renderModalSimulation();
+        },
+        "plan-choice"
+      )
+    );
+  });
+
+  requestedAmountField.value = String(modalSelectedAmount);
+  selectedTermField.value = modalSelectedPlan ? String(modalSelectedPlan.term) : "";
+  installmentAmountField.value = modalSelectedPlan ? String(modalSelectedPlan.amount) : "";
+}
+
+function openSimulator(productKey, amount, term) {
+  if (!products[productKey]) return;
+
   selectedProduct = productKey;
   preScreenApproved = false;
   cepInfo = null;
   applicationForm.reset();
   consentField.value = "false";
   cityDisplay.value = "";
-  preScreenStatus.className = "status-box hidden";
-  submitStatus.className = "status-box hidden";
+  clearStatus(simulationStatus);
+  clearStatus(preScreenStatus);
+  clearStatus(submitStatus);
 
-  const p = products[productKey];
+  const product = products[productKey];
   productField.value = productKey;
-  modalTitle.textContent = p.title;
-  modalSubtitle.textContent = p.subtitle;
+  modalTitle.textContent = product.title;
+  modalSubtitle.textContent = product.subtitle;
 
-  setupRange(
-    modalAmount,
-    modalAmountLabel,
-    modalMin,
-    modalMax,
-    productKey,
-    amount && amount >= p.min && amount <= p.max ? amount : p.min
-  );
+  const normalizedAmount = Number(amount);
+  modalSelectedAmount = product.amounts.includes(normalizedAmount) ? normalizedAmount : product.amounts[0];
+  modalSelectedPlan = term ? findPlan(productKey, modalSelectedAmount, term) : null;
 
-  requestedAmountField.value = modalAmount.value;
+  renderModalSimulation(term);
   renderDynamicFields(productKey);
   renderDocumentFields(productKey);
   showStep(1);
@@ -165,7 +278,15 @@ function showStep(step) {
   });
 }
 
-document.querySelector("#toPreScreen").addEventListener("click", () => showStep(2));
+document.querySelector("#toPreScreen").addEventListener("click", () => {
+  clearStatus(simulationStatus);
+  if (!modalSelectedPlan) {
+    setStatus(simulationStatus, "error", "Escolha uma opção de pagamento para continuar.");
+    return;
+  }
+  showStep(2);
+});
+
 document.querySelectorAll("[data-back]").forEach(btn => {
   btn.addEventListener("click", () => showStep(Number(btn.dataset.back)));
 });
@@ -189,6 +310,7 @@ function renderDynamicFields(productKey) {
           </label>
         </div>
       </div>`;
+    return;
   }
 
   if (productKey === "inss") {
@@ -229,43 +351,27 @@ function renderDynamicFields(productKey) {
     document.querySelector("#representativeSelect").addEventListener("change", () => {
       renderDocumentFields("inss");
     });
+    return;
   }
 
-  if (productKey === "giro") {
+  if (productKey === "bolsa") {
     dynamicFields.innerHTML = `
       <div class="dynamic-section">
         <div class="form-grid">
           <label>
-            CNPJ
-            <input name="cnpj" inputmode="numeric" required>
+            Valor aproximado do benefício
+            <input name="benefitAmount" inputmode="decimal" required>
           </label>
           <label>
-            Há quantos meses o CNPJ está ativo?
-            <input name="cnpjMonths" type="number" min="0" step="1" required>
-          </label>
-          <label>
-            Média mensal de vendas em cartão
-            <input name="cardSales" inputmode="decimal" required>
+            Onde recebe o benefício? <span class="optional-label">(opcional)</span>
+            <input name="benefitBank">
           </label>
         </div>
       </div>`;
+    return;
   }
 
-  if (productKey === "veiculo") {
-    dynamicFields.innerHTML = `
-      <div class="dynamic-section">
-        <div class="form-grid">
-          <label>
-            Veículo
-            <input name="vehicleModel" placeholder="Marca e modelo" required>
-          </label>
-          <label>
-            Ano do veículo
-            <input name="vehicleYear" type="number" min="1980" max="2030" required>
-          </label>
-        </div>
-      </div>`;
-  }
+  dynamicFields.innerHTML = "";
 }
 
 function uploadField(name, label, multiple = false) {
@@ -289,6 +395,7 @@ function renderDocumentFields(productKey) {
       uploadField("residencia", "Comprovante de residência") +
       uploadField("holerite", "Holerite") +
       uploadField("extratos", "Extratos bancários dos últimos 3 meses", true);
+    return;
   }
 
   if (productKey === "inss") {
@@ -301,34 +408,18 @@ function renderDocumentFields(productKey) {
         ? uploadField("identidadeRepresentante", "RG ou CNH do representante") +
           uploadField("representacao", "Documento que comprove a representação")
         : "");
+    return;
   }
 
-  if (productKey === "giro") {
-    documentFields.innerHTML =
-      uploadField("identidade", "RG ou CNH do sócio") +
-      uploadField("residencia", "Comprovante de residência") +
-      uploadField("extratosPJ", "Extratos bancários PJ dos últimos 3 meses", true) +
-      uploadField("cartaoCNPJ", "Cartão CNPJ") +
-      uploadField("enderecoEmpresa", "Comprovante de endereço da empresa") +
-      uploadField("fachada", "Foto da fachada da empresa");
-  }
-
-  if (productKey === "veiculo") {
+  if (productKey === "bolsa") {
     documentFields.innerHTML =
       uploadField("identidade", "RG ou CNH") +
       uploadField("residencia", "Comprovante de residência") +
-      uploadField("crlv", "CRLV / documento do veículo");
+      uploadField("beneficio", "Extrato ou comprovante do benefício Bolsa Família");
+    return;
   }
-}
 
-function setStatus(element, type, message) {
-  element.className = `status-box ${type}`;
-  element.textContent = message;
-}
-
-function clearStatus(element) {
-  element.className = "status-box hidden";
-  element.textContent = "";
+  documentFields.innerHTML = "";
 }
 
 function validateStep2Basics() {
@@ -375,27 +466,15 @@ document.querySelector("#runPreScreen").addEventListener("click", async () => {
     }
   }
 
-  if (selectedProduct === "giro") {
-    const months = Number(fd.get("cnpjMonths") || 0);
-    if (months < 6) {
-      setStatus(
-        preScreenStatus,
-        "error",
-        "No momento, não conseguimos seguir. Para o Capital de Giro é necessário que o CNPJ tenha pelo menos 6 meses."
-      );
-      return;
-    }
-  }
-
   try {
     setStatus(preScreenStatus, "success", "Validando sua região...");
     cepInfo = await fetchCEPInfo();
 
-    if (["clt", "inss"].includes(selectedProduct) && !cepInfo.inServiceArea) {
+    if (!cepInfo.inServiceArea) {
       setStatus(
         preScreenStatus,
         "error",
-        "Ainda não atendemos sua região. Atualmente este produto está disponível para Franca/SP e localidades em um raio de até 50 km."
+        "Ainda não atendemos sua região. Atualmente CLT, INSS e Bolsa Família estão disponíveis para Franca/SP e localidades em um raio de até 20 km."
       );
       return;
     }
@@ -404,7 +483,7 @@ document.querySelector("#runPreScreen").addEventListener("click", async () => {
     setStatus(
       preScreenStatus,
       "success",
-      "Você atende aos requisitos iniciais. Agora envie seus documentos para continuarmos a análise."
+      "Pré-análise concluída. Você atende aos requisitos iniciais. Agora envie seus documentos para continuarmos a análise."
     );
 
     setTimeout(() => {
@@ -430,12 +509,19 @@ applicationForm.addEventListener("submit", async (event) => {
   }
 
   if (!privacyConsent.checked) {
-    setStatus(submitStatus, "error", "É necessário aceitar a política de privacidade.");
+    setStatus(submitStatus, "error", "É necessário aceitar os Termos de Uso e a Política de Privacidade.");
+    return;
+  }
+
+  if (!modalSelectedPlan) {
+    setStatus(submitStatus, "error", "Selecione uma opção de pagamento antes de enviar a solicitação.");
     return;
   }
 
   consentField.value = "true";
-  requestedAmountField.value = modalAmount.value;
+  requestedAmountField.value = String(modalSelectedAmount);
+  selectedTermField.value = String(modalSelectedPlan.term);
+  installmentAmountField.value = String(modalSelectedPlan.amount);
 
   const submitBtn = document.querySelector("#submitApplication");
   submitBtn.disabled = true;
@@ -458,7 +544,7 @@ applicationForm.addEventListener("submit", async (event) => {
     setStatus(
       submitStatus,
       "success",
-      "Solicitação enviada. Nossa equipe poderá continuar a análise com os dados e documentos informados."
+      "Solicitação recebida. Nossa equipe continuará a análise com os dados e documentos informados."
     );
 
     setTimeout(closeSimulator, 1800);
