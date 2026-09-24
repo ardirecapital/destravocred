@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GRUPPO ARDIRE — Crédito para pessoas e pequenos negócios</title>
-  <meta name="description" content="Crédito pessoal para CLT e INSS, capital de giro e crédito com garantia de veículo. Atendimento em Franca e região.">
+  <title>GRUPPO ARDIRE — Crédito CLT, INSS e Bolsa Família</title>
+  <meta name="description" content="Crédito pessoal para CLT, aposentados e pensionistas do INSS e beneficiários do Bolsa Família. Atendimento em Franca/SP e região em um raio de até 20 km.">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -18,9 +18,9 @@
       <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
 
       <nav id="mainNav">
-        <a href="#produtos">Para você</a>
-        <a href="#empresas">Para empresas</a>
+        <a href="#produtos">Produtos</a>
         <a href="#como-funciona">Como funciona</a>
+        <a href="#requisitos">Requisitos</a>
         <a href="#ajuda">Ajuda</a>
       </nav>
 
@@ -37,8 +37,8 @@
           <p class="eyebrow">GRUPPO ARDIRE</p>
           <h1>Crédito para destravar seus planos.</h1>
           <p class="hero-copy">
-            Soluções de crédito para pessoas e pequenos negócios, com análise simples,
-            contratação segura e atendimento próximo.
+            Crédito pessoal para trabalhadores CLT, aposentados e pensionistas do INSS e beneficiários do Bolsa Família,
+            com pré-análise simples, contratação segura e atendimento próximo.
           </p>
 
           <div class="hero-actions">
@@ -49,51 +49,55 @@
           <div class="trust-row">
             <span>Análise individual</span>
             <span>Contratação digital</span>
-            <span>Franca e região</span>
+            <span>Franca/SP + raio de 20 km</span>
           </div>
         </div>
 
         <div class="hero-simulator">
           <p class="eyebrow">SIMULAÇÃO RÁPIDA</p>
-          <h2>De quanto você precisa?</h2>
+          <h2>Escolha seu crédito</h2>
 
-          <div class="product-tabs" role="tablist">
-            <button class="tab active" data-quick-product="clt">CLT</button>
-            <button class="tab" data-quick-product="inss">INSS</button>
-            <button class="tab" data-quick-product="giro">Giro</button>
-            <button class="tab" data-quick-product="veiculo">Veículo</button>
+          <div class="product-tabs" role="tablist" aria-label="Tipo de crédito">
+            <button class="tab active" data-quick-product="clt" type="button">CLT</button>
+            <button class="tab" data-quick-product="inss" type="button">INSS</button>
+            <button class="tab" data-quick-product="bolsa" type="button">Bolsa Família</button>
           </div>
 
-          <div class="money-value" id="quickAmountLabel">R$ 500</div>
-          <input id="quickAmount" type="range" min="500" max="2000" step="100" value="500">
-          <div class="range-labels">
-            <span id="quickMin">R$ 500</span>
-            <span id="quickMax">R$ 2.000</span>
+          <div class="simulator-choice-group">
+            <span class="choice-label">Valor desejado</span>
+            <div class="choice-grid amount-choice-grid" id="quickAmountOptions"></div>
           </div>
 
-          <button class="btn btn-primary btn-block" id="quickSimulate">
+          <div class="simulator-choice-group">
+            <span class="choice-label">Escolha uma opção de pagamento</span>
+            <div class="choice-grid plan-choice-grid" id="quickPlanOptions"></div>
+          </div>
+
+          <div class="status-box error hidden" id="quickSimulationStatus"></div>
+
+          <button class="btn btn-primary btn-block" id="quickSimulate" type="button">
             Simule agora
           </button>
-          <small>Crédito sujeito à análise e aprovação.</small>
+          <small>Valores aproximados de referência. Condições finais sujeitas à análise e aprovação de crédito.</small>
         </div>
       </div>
     </section>
 
     <section class="section" id="produtos">
       <div class="container">
-        <p class="eyebrow">PARA VOCÊ</p>
-        <h2>Encontre o crédito adequado para o seu momento</h2>
+        <p class="eyebrow">CRÉDITO PESSOAL</p>
+        <h2>Três opções para diferentes momentos</h2>
 
-        <div class="cards three">
+        <div class="product-showcase">
           <article class="product-card">
             <span class="pill">CLT</span>
             <h3>Crédito Pessoal para CLT</h3>
             <p class="big">De R$ 500 a R$ 2.000</p>
             <p>Para quem está registrado há pelo menos 4 meses no emprego atual.</p>
             <ul>
-              <li>Atendimento em Franca e raio de até 50 km</li>
+              <li>Atendimento em Franca/SP e raio de até 20 km</li>
               <li>Negativados também podem solicitar</li>
-              <li>Análise individual</li>
+              <li>Opções de 3x, 6x, 9x ou 12x</li>
             </ul>
             <button class="text-link" data-open-product="clt">Simular crédito →</button>
           </article>
@@ -101,90 +105,58 @@
           <article class="product-card">
             <span class="pill">INSS</span>
             <h3>Crédito Pessoal INSS</h3>
-            <p class="big">Até R$ 2.000</p>
+            <p class="big">De R$ 500 a R$ 2.000</p>
             <p>Para aposentados e pensionistas, com análise da renda do benefício.</p>
             <ul>
-              <li>Atendimento em Franca e raio de até 50 km</li>
-              <li>Representante legal pode solicitar</li>
-              <li>Não é consignado</li>
+              <li>Atendimento em Franca/SP e raio de até 20 km</li>
+              <li>Representante legal pode solicitar quando aplicável</li>
+              <li>Opções de 3x, 6x, 9x, 12x, 18x ou 36x</li>
+              <li>Crédito pessoal não consignado</li>
             </ul>
             <button class="text-link" data-open-product="inss">Simular crédito →</button>
           </article>
 
-          <article class="product-card">
-            <span class="pill">VEÍCULO</span>
-            <h3>Crédito com Garantia de Veículo</h3>
-            <p class="big">Até R$ 30.000</p>
-            <p>Use seu veículo como garantia para acessar valores maiores.</p>
-            <ul>
-              <li>Até 36 meses para pagar</li>
-              <li>Você continua usando o veículo</li>
-              <li>Condições definidas após análise</li>
-            </ul>
-            <button class="text-link" data-open-product="veiculo">Simular crédito →</button>
+          <article class="product-card product-card-featured">
+            <div>
+              <span class="pill">BOLSA FAMÍLIA</span>
+              <h3>Crédito para beneficiários do Bolsa Família</h3>
+              <p class="big">Até R$ 500</p>
+              <p>Opção de crédito pessoal sujeita à análise e aprovação, com atendimento local.</p>
+            </div>
+            <div class="featured-product-details">
+              <ul>
+                <li>Valor máximo de R$ 500</li>
+                <li>3x de R$ 250 ou 6x de R$ 160</li>
+                <li>Atendimento em Franca/SP e raio de até 20 km</li>
+                <li>Crédito pessoal não consignado</li>
+              </ul>
+              <button class="btn btn-primary" data-open-product="bolsa">Simular Bolsa Família</button>
+            </div>
           </article>
         </div>
-      </div>
-    </section>
 
-    <section class="section section-alt" id="empresas">
-      <div class="container split">
-        <div>
-          <p class="eyebrow">PARA EMPRESAS</p>
-          <h2>Capital de giro para pequenos negócios</h2>
-          <p class="lead">
-            Crédito para MEIs e pequenas empresas que precisam reforçar o caixa e manter o negócio em movimento.
-          </p>
-
-          <div class="feature-grid">
-            <div>
-              <strong>R$ 1 mil a R$ 5 mil</strong>
-              <span>Ticket inicial do produto</span>
-            </div>
-            <div>
-              <strong>CNPJ a partir de 6 meses</strong>
-              <span>Pré-requisito para análise</span>
-            </div>
-            <div>
-              <strong>Vendas em maquininha</strong>
-              <span>Faturamento recorrente ajuda na análise</span>
-            </div>
-          </div>
-
-          <button class="btn btn-primary" data-open-product="giro">Simular capital de giro</button>
-        </div>
-
-        <div class="panel">
-          <h3>Documentos para análise</h3>
-          <ul class="document-list">
-            <li>RG ou CNH do sócio</li>
-            <li>Comprovante de residência</li>
-            <li>Extratos bancários PJ dos últimos 3 meses</li>
-            <li>Cartão CNPJ</li>
-            <li>Comprovante de endereço da empresa</li>
-            <li>Foto da fachada da empresa</li>
-          </ul>
-          <p class="note">A primeira operação pode exigir visita de validação.</p>
-        </div>
+        <p class="note reference-note">
+          Valores de parcela são aproximados e servem como referência comercial. A contratação e as condições finais dependem da análise e aprovação de crédito.
+        </p>
       </div>
     </section>
 
     <section class="section dark" id="como-funciona">
       <div class="container">
         <p class="eyebrow light">COMO FUNCIONA</p>
-        <h2>Experiência simples para contratar seu crédito</h2>
+        <h2>Experiência simples para solicitar seu crédito</h2>
         <p class="lead muted">As etapas podem variar conforme o produto e o resultado da análise.</p>
 
         <div class="steps">
           <article>
             <span>1</span>
             <h3>Simulação</h3>
-            <p>Escolha o produto, informe o valor desejado e seus dados básicos.</p>
+            <p>Escolha o produto, o valor e uma das opções de parcela disponíveis.</p>
           </article>
           <article>
             <span>2</span>
             <h3>Pré-análise</h3>
-            <p>O sistema verifica os requisitos iniciais antes de solicitar documentos.</p>
+            <p>O sistema verifica os requisitos iniciais, incluindo a área de atendimento.</p>
           </article>
           <article>
             <span>3</span>
@@ -193,16 +165,16 @@
           </article>
           <article>
             <span>4</span>
-            <h3>Contratação</h3>
-            <p>Após aprovação, confira as condições, assine digitalmente e conclua a operação.</p>
+            <h3>Análise final</h3>
+            <p>Após a avaliação, nossa equipe informa as condições disponíveis para a operação.</p>
           </article>
         </div>
 
-        <button class="btn btn-primary" data-open-product="clt">Simule grátis</button>
+        <button class="btn btn-primary" data-open-product="clt">Simule seu crédito</button>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="requisitos">
       <div class="container">
         <p class="eyebrow">CRÉDITO PESSOAL CLT</p>
         <h2>O que você precisa para solicitar</h2>
@@ -210,7 +182,7 @@
         <div class="requirements-grid">
           <div class="requirement-highlight">
             <strong>Carteira assinada há pelo menos 4 meses</strong>
-            <p>E residir em Franca/SP ou em localidade dentro de um raio de até 50 km.</p>
+            <p>E residir em Franca/SP ou em localidade dentro de um raio de até 20 km.</p>
           </div>
 
           <div class="panel">
@@ -237,8 +209,8 @@
 
         <div class="requirements-grid">
           <div class="requirement-highlight">
-            <strong>Atendimento local</strong>
-            <p>Disponível para Franca/SP e localidades em um raio de até 50 km.</p>
+            <strong>Até R$ 2.000</strong>
+            <p>Para aposentados e pensionistas em Franca/SP e localidades em um raio de até 20 km.</p>
           </div>
 
           <div class="panel">
@@ -256,29 +228,26 @@
 
     <section class="section">
       <div class="container">
-        <p class="eyebrow">GARANTIA DE VEÍCULO</p>
-        <h2>Seu veículo pode abrir caminho para um crédito maior</h2>
+        <p class="eyebrow">BOLSA FAMÍLIA</p>
+        <h2>Crédito de até R$ 500 para beneficiários</h2>
 
-        <div class="cards four compact">
-          <article>
-            <h3>Até R$ 30 mil</h3>
-            <p>O valor disponível depende da análise do perfil e do veículo.</p>
-          </article>
-          <article>
-            <h3>Até 36 meses</h3>
-            <p>Mais prazo para organizar as parcelas de acordo com as condições aprovadas.</p>
-          </article>
-          <article>
-            <h3>Continue usando o carro</h3>
-            <p>O veículo permanece com você durante o contrato, observadas as condições da operação.</p>
-          </article>
-          <article>
-            <h3>Análise individual</h3>
-            <p>As condições são definidas após avaliação do cliente, documentação e veículo.</p>
-          </article>
+        <div class="requirements-grid">
+          <div class="requirement-highlight">
+            <strong>R$ 500 em 3x ou 6x</strong>
+            <p>Atendimento para Franca/SP e localidades em um raio de até 20 km, sempre sujeito à análise e aprovação.</p>
+          </div>
+
+          <div class="panel">
+            <h3>Tenha em mãos</h3>
+            <ul class="document-list">
+              <li>RG ou CNH</li>
+              <li>Comprovante de residência</li>
+              <li>Extrato ou comprovante do benefício Bolsa Família</li>
+            </ul>
+          </div>
         </div>
 
-        <button class="btn btn-primary" data-open-product="veiculo">Simule agora</button>
+        <p class="note">Crédito pessoal não consignado. A pré-análise não representa aprovação automática.</p>
       </div>
     </section>
 
@@ -290,19 +259,23 @@
         <div class="faq">
           <details>
             <summary>A simulação garante aprovação?</summary>
-            <p>Não. Toda solicitação passa por análise e as condições finais dependem do perfil e do produto.</p>
+            <p>Não. Os valores apresentados são referências. Toda solicitação passa por análise e as condições finais dependem do perfil e do produto.</p>
           </details>
           <details>
             <summary>Posso solicitar estando negativado?</summary>
             <p>No Crédito Pessoal CLT, negativados também podem solicitar. Isso não significa aprovação automática.</p>
           </details>
           <details>
-            <summary>Por que a ARDIRE pede documentos?</summary>
-            <p>Os documentos são utilizados para confirmar identidade, renda, endereço e as informações necessárias à análise da operação.</p>
+            <summary>Qual é a área de atendimento?</summary>
+            <p>CLT, INSS e Bolsa Família são atendidos em Franca/SP e localidades dentro de um raio de até 20 km.</p>
           </details>
           <details>
-            <summary>Vocês atendem todo o Brasil?</summary>
-            <p>Os produtos CLT e INSS estão configurados inicialmente para Franca/SP e localidades em um raio de até 50 km.</p>
+            <summary>Qual é o valor máximo para Bolsa Família?</summary>
+            <p>O produto está configurado para solicitação de até R$ 500, com opções de referência em 3x ou 6x.</p>
+          </details>
+          <details>
+            <summary>Por que a ARDIRE pede documentos?</summary>
+            <p>Os documentos são utilizados para confirmar identidade, renda ou benefício, endereço e as informações necessárias à análise da operação.</p>
           </details>
         </div>
       </div>
@@ -313,7 +286,7 @@
         <div>
           <p class="eyebrow light">COMECE AGORA</p>
           <h2>Faça sua simulação</h2>
-          <p>Leva poucos minutos para verificar se você atende aos requisitos iniciais.</p>
+          <p>Escolha o valor e a parcela e verifique se você atende aos requisitos iniciais.</p>
         </div>
         <button class="btn btn-light btn-lg" data-open-product="clt">Simule seu crédito</button>
       </div>
@@ -327,15 +300,15 @@
           <img class="brand-logo" src="/logo-ardire.png" alt="Logo ARDIRE">
           <span class="brand-name">GRUPPO ARDIRE</span>
         </div>
-        <p>Soluções de crédito para pessoas e pequenos negócios.</p>
+        <p>Crédito pessoal para CLT, INSS e beneficiários do Bolsa Família.</p>
+        <p class="note">WhatsApp de atendimento: (16) 99729-6274</p>
       </div>
 
       <div>
         <strong>Produtos</strong>
         <a href="#" data-open-product="clt">Crédito CLT</a>
         <a href="#" data-open-product="inss">Crédito INSS</a>
-        <a href="#" data-open-product="giro">Capital de Giro</a>
-        <a href="#" data-open-product="veiculo">Garantia de Veículo</a>
+        <a href="#" data-open-product="bolsa">Bolsa Família</a>
       </div>
 
       <div>
@@ -343,7 +316,7 @@
         <a href="/privacidade.html">Política de privacidade</a>
         <a href="/termos.html">Termos de uso</a>
         <p class="note">
-          Crédito sujeito à análise e aprovação. Valores, prazos e demais condições variam conforme o perfil e o produto.
+          Crédito sujeito à análise e aprovação. Valores, prazos e demais condições podem variar conforme o perfil e o produto.
         </p>
       </div>
     </div>
@@ -362,19 +335,27 @@
       <form id="applicationForm" enctype="multipart/form-data">
         <input type="hidden" name="product" id="productField">
         <input type="hidden" name="requestedAmount" id="requestedAmountField">
+        <input type="hidden" name="selectedTerm" id="selectedTermField">
+        <input type="hidden" name="installmentAmount" id="installmentAmountField">
         <input type="hidden" name="consent" id="consentField" value="false">
 
         <section class="form-step" data-step="1">
           <p class="eyebrow">SIMULAÇÃO</p>
           <h2 id="modalTitle">Crédito Pessoal CLT</h2>
-          <p id="modalSubtitle">Escolha o valor que deseja solicitar.</p>
+          <p id="modalSubtitle">Escolha o valor e uma opção de pagamento.</p>
 
-          <div class="money-value" id="modalAmountLabel">R$ 500</div>
-          <input id="modalAmount" type="range" min="500" max="2000" step="100" value="500">
-          <div class="range-labels">
-            <span id="modalMin">R$ 500</span>
-            <span id="modalMax">R$ 2.000</span>
+          <div class="simulator-choice-group">
+            <span class="choice-label">Valor solicitado</span>
+            <div class="choice-grid amount-choice-grid" id="modalAmountOptions"></div>
           </div>
+
+          <div class="simulator-choice-group">
+            <span class="choice-label">Opções de pagamento</span>
+            <div class="choice-grid plan-choice-grid" id="modalPlanOptions"></div>
+          </div>
+
+          <p class="note">Valores aproximados de referência. Condições finais sujeitas à análise e aprovação de crédito.</p>
+          <div class="status-box error hidden" id="simulationStatus"></div>
 
           <button type="button" class="btn btn-primary btn-block" id="toPreScreen">
             Continuar
