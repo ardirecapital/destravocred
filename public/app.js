@@ -12,7 +12,7 @@ const products = {
   },
   inss: {
     title: "Crédito Pessoal INSS",
-    subtitle: "Para aposentados e pensionistas. Crédito pessoal não consignado.",
+    subtitle: "Para aposentados, pensionistas e beneficiários do BPC/LOAS. Crédito pessoal não consignado.",
     amounts: [500, 1000, 1500, 2000],
     installments: {
       500: [{ term: 3, amount: 250 }, { term: 6, amount: 160 }, { term: 9, amount: 135 }, { term: 12, amount: 115 }, { term: 18, amount: 110 }, { term: 36, amount: 85 }],
@@ -69,6 +69,7 @@ const preScreenStatus = document.querySelector("#preScreenStatus");
 const submitStatus = document.querySelector("#submitStatus");
 const privacyConsent = document.querySelector("#privacyConsent");
 const consentField = document.querySelector("#consentField");
+const leadRefField = document.querySelector("#leadRefField");
 const cepInput = document.querySelector("#cepInput");
 const cityDisplay = document.querySelector("#cityDisplay");
 
@@ -236,6 +237,7 @@ function openSimulator(productKey, amount, term) {
   cepInfo = null;
   applicationForm.reset();
   consentField.value = "false";
+  leadRefField.value = "";
   cityDisplay.value = "";
   clearStatus(simulationStatus);
   clearStatus(preScreenStatus);
@@ -321,9 +323,10 @@ function renderDynamicFields(productKey) {
             Tipo de benefício
             <select name="benefitType" required>
               <option value="">Selecione</option>
-              <option>Aposentadoria</option>
-              <option>Pensão</option>
-              <option>Outro benefício</option>
+              <option value="aposentadoria">Aposentadoria</option>
+              <option value="pensao">Pensão por morte</option>
+              <option value="bpc_idoso">BPC/LOAS — Idoso</option>
+              <option value="bpc_pcd">BPC/LOAS — Pessoa com deficiência</option>
             </select>
           </label>
           <label>
@@ -374,7 +377,7 @@ function renderDynamicFields(productKey) {
   dynamicFields.innerHTML = "";
 }
 
-function uploadField(name, label, multiple = false) {
+function uploadField(name, label) {
   return `
     <label class="upload-card">
       ${label}
@@ -382,9 +385,23 @@ function uploadField(name, label, multiple = false) {
         type="file"
         name="${name}"
         accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-        ${multiple ? "multiple" : ""}
         required
       >
+    </label>`;
+}
+
+function bankStatementsField() {
+  return `
+    <label class="upload-card">
+      Extratos bancários dos últimos 90 dias
+      <input
+        type="file"
+        name="extratos"
+        accept=".pdf,application/pdf"
+        multiple
+        required
+      >
+      <span class="upload-help">Envie de 1 a 3 arquivos em PDF que, juntos, cubram os últimos 90 dias. Se o banco gerar um único PDF com todo o período, envie apenas esse arquivo. Não envie prints ou fotos do extrato.</span>
     </label>`;
 }
 
@@ -394,7 +411,7 @@ function renderDocumentFields(productKey) {
       uploadField("identidade", "RG ou CNH") +
       uploadField("residencia", "Comprovante de residência") +
       uploadField("holerite", "Holerite") +
-      uploadField("extratos", "Extratos bancários dos últimos 3 meses", true);
+      bankStatementsField();
     return;
   }
 
@@ -404,6 +421,7 @@ function renderDocumentFields(productKey) {
       uploadField("identidade", "RG ou CNH do beneficiário") +
       uploadField("residencia", "Comprovante de residência") +
       uploadField("beneficio", "Extrato do benefício do INSS") +
+      bankStatementsField() +
       (isRepresentative
         ? uploadField("identidadeRepresentante", "RG ou CNH do representante") +
           uploadField("representacao", "Documento que comprove a representação")
@@ -415,11 +433,27 @@ function renderDocumentFields(productKey) {
     documentFields.innerHTML =
       uploadField("identidade", "RG ou CNH") +
       uploadField("residencia", "Comprovante de residência") +
-      uploadField("beneficio", "Extrato ou comprovante do benefício Bolsa Família");
+      uploadField("beneficio", "Extrato ou comprovante do benefício Bolsa Família") +
+      bankStatementsField();
     return;
   }
 
   documentFields.innerHTML = "";
+}
+
+function validateBankStatements() {
+  const input = document.querySelector('input[name="extratos"]');
+  const files = Array.from(input?.files || []);
+
+  if (files.length < 1 || files.length > 3) {
+    return "Envie de 1 a 3 extratos bancários em PDF que cubram os últimos 90 dias.";
+  }
+
+  if (files.some(file => file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf"))) {
+    return "Os extratos bancários devem ser enviados somente em PDF. Não envie prints ou fotos.";
+  }
+
+  return null;
 }
 
 function validateStep2Basics() {
@@ -474,16 +508,38 @@ document.querySelector("#runPreScreen").addEventListener("click", async () => {
       setStatus(
         preScreenStatus,
         "error",
-        "Ainda não atendemos sua região. Atualmente CLT, INSS e Bolsa Família estão disponíveis para Franca/SP e localidades em um raio de até 20 km."
+        "Ainda não atendemos sua cidade. Atualmente atendemos Franca, Restinga, Patrocínio Paulista, Cristais Paulista, Itirapuã, São José da Bela Vista, Cássia e Ibiraci."
       );
       return;
     }
 
+    requestedAmountField.value = String(modalSelectedAmount);
+    selectedTermField.value = String(modalSelectedPlan?.term || "");
+    installmentAmountField.value = String(modalSelectedPlan?.amount || "");
+
+    setStatus(preScreenStatus, "success", "Pré-análise concluída. Registrando sua solicitação...");
+
+    const preScreenPayload = Object.fromEntries(new FormData(applicationForm).entries());
+    const registerResponse = await fetch("/api/prescreen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(preScreenPayload)
+    });
+    const registerData = await registerResponse.json();
+
+    if (!registerResponse.ok) {
+      throw new Error(registerData.error || "Não foi possível registrar a pré-análise.");
+    }
+
+    leadRefField.value = registerData.leadRef || "";
     preScreenApproved = true;
+    const appointmentNote = cepInfo.appointmentOnly
+      ? " Para Cássia e Ibiraci, o atendimento presencial ocorre em dias previamente agendados."
+      : "";
     setStatus(
       preScreenStatus,
       "success",
-      "Pré-análise concluída. Você atende aos requisitos iniciais. Agora envie seus documentos para continuarmos a análise."
+      `Pré-análise concluída e solicitação registrada. Agora envie seus documentos para continuarmos a análise.${appointmentNote}`
     );
 
     setTimeout(() => {
@@ -492,6 +548,17 @@ document.querySelector("#runPreScreen").addEventListener("click", async () => {
     }, 550);
   } catch (error) {
     setStatus(preScreenStatus, "error", error.message);
+  }
+});
+
+
+applicationForm.addEventListener("input", (event) => {
+  const step2 = event.target.closest?.('[data-step="2"]');
+  if (!step2 || event.target === cityDisplay) return;
+  if (preScreenApproved || leadRefField.value) {
+    preScreenApproved = false;
+    leadRefField.value = "";
+    clearStatus(preScreenStatus);
   }
 });
 
@@ -515,6 +582,12 @@ applicationForm.addEventListener("submit", async (event) => {
 
   if (!modalSelectedPlan) {
     setStatus(submitStatus, "error", "Selecione uma opção de pagamento antes de enviar a solicitação.");
+    return;
+  }
+
+  const bankStatementError = validateBankStatements();
+  if (bankStatementError) {
+    setStatus(submitStatus, "error", bankStatementError);
     return;
   }
 
