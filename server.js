@@ -138,8 +138,8 @@ function validatePreScreen(body) {
 
   if (product === "clt") {
     const months = Number(body.employmentMonths || 0);
-    if (months < 6) {
-      return "Para o Crédito Pessoal CLT é necessário ter pelo menos 6 meses de registro no emprego atual.";
+    if (months < 4) {
+      return "Para o Crédito Pessoal CLT é necessário ter pelo menos 4 meses de registro no emprego atual.";
     }
   }
 
@@ -287,6 +287,11 @@ app.post("/api/submit", upload.any(), async (req, res) => {
       vehicleModel: req.body.vehicleModel || "",
       vehicleYear: req.body.vehicleYear || "",
       consent: true,
+      consentAcceptedAt: new Date().toISOString(),
+      privacyPolicyVersion: "2026-09-24",
+      termsVersion: "2026-09-24",
+      visitAndCollectionAcknowledgement: true,
+      source: "Site ARDIRE",
       fileNames: files.map((f) => ({
         field: f.fieldname,
         name: f.originalname,
