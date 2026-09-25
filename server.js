@@ -673,7 +673,7 @@ async function uploadSingleFileToKommo(file, driveUrl) {
     const end = Math.min(offset + maxPartSize, file.size);
     const part = file.buffer.subarray(offset, end);
     const form = new FormData();
-    form.append("file", new Blob([part], { type: file.mimetype }), file.originalname);
+    form.append("RAW_BODY", new Blob([part], { type: file.mimetype }), file.originalname);
 
     const uploadResponse = await fetch(nextUrl, {
       method: "POST",
@@ -693,7 +693,10 @@ async function uploadSingleFileToKommo(file, driveUrl) {
     }
 
     if (!uploadResponse.ok) {
-      throw new Error(`Falha ao enviar arquivo ao Kommo (${uploadResponse.status}).`);
+      const detail = typeof uploadData === "string"
+        ? uploadData
+        : (uploadData?.detail || uploadData?.title || uploadData?.message || JSON.stringify(uploadData || {}));
+      throw new Error(`Falha ao enviar arquivo ao Kommo (${uploadResponse.status})${detail ? `: ${detail}` : ""}.`);
     }
 
     if (uploadData?.uuid) {
@@ -1059,7 +1062,16 @@ app.post("/api/submit", upload.any(), async (req, res) => {
     }
 
     await updateKommoLeadAfterDocuments(payload, ref.leadId);
-    const uploadedFiles = await attachFilesToKommoLead(files, ref.leadId);
+
+    let uploadedFiles = [];
+    let kommoFileWarning = "";
+    try {
+      uploadedFiles = await attachFilesToKommoLead(files, ref.leadId);
+    } catch (fileError) {
+      kommoFileWarning = fileError?.message || "Falha ao anexar documentos no Kommo.";
+      console.error("Erro ao anexar documentos no Kommo:", fileError);
+    }
+
     const mailResult = await sendApplicationEmail(payload, files);
     await saveLocalForDevelopment(payload, files);
 
@@ -1068,6 +1080,7 @@ app.post("/api/submit", upload.any(), async (req, res) => {
       submissionId,
       kommoLeadId: ref.leadId,
       documentsAttachedToKommo: uploadedFiles.length,
+      kommoFileWarning: Boolean(kommoFileWarning),
       emailZipAttached: mailResult.attachedZip,
       message: "Solicitação recebida com sucesso."
     });
