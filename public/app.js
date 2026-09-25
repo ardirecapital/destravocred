@@ -45,6 +45,7 @@ let modalSelectedAmount = 500;
 let modalSelectedPlan = null;
 let cepInfo = null;
 let preScreenApproved = false;
+let selectedBankStatements = [];
 
 const quickAmountOptions = document.querySelector("#quickAmountOptions");
 const quickPlanOptions = document.querySelector("#quickPlanOptions");
@@ -234,6 +235,7 @@ function openSimulator(productKey, amount, term) {
 
   selectedProduct = productKey;
   preScreenApproved = false;
+  selectedBankStatements = [];
   cepInfo = null;
   applicationForm.reset();
   consentField.value = "false";
@@ -392,26 +394,103 @@ function uploadField(name, label) {
 
 function bankStatementsField() {
   return `
-    <label class="upload-card">
-      Extratos bancários dos últimos 90 dias
+    <div class="upload-card bank-statements-card">
+      <label for="bankStatementsInput">Extratos bancários dos últimos 90 dias</label>
       <input
+        id="bankStatementsInput"
         type="file"
         name="extratos"
         accept=".pdf,application/pdf"
         multiple
-        required
       >
-      <span class="upload-help">Envie de 1 a 3 arquivos em PDF que, juntos, cubram os últimos 90 dias. Se o banco gerar um único PDF com todo o período, envie apenas esse arquivo. Não envie prints ou fotos do extrato.</span>
-    </label>`;
+      <div class="selected-files-summary" id="bankStatementsSummary" aria-live="polite">Nenhum arquivo selecionado.</div>
+      <div class="selected-files-list" id="bankStatementsList"></div>
+      <span class="upload-help">Envie de 1 a 3 arquivos em PDF que, juntos, cubram os últimos 90 dias. Se o banco gerar um único PDF com todo o período, envie apenas esse arquivo. Você pode adicionar os PDFs um de cada vez. Não envie prints ou fotos do extrato.</span>
+    </div>`;
+}
+
+function bankStatementKey(file) {
+  return `${file.name}::${file.size}::${file.lastModified}`;
+}
+
+function renderBankStatementList() {
+  const summary = document.querySelector("#bankStatementsSummary");
+  const list = document.querySelector("#bankStatementsList");
+  if (!summary || !list) return;
+
+  const count = selectedBankStatements.length;
+  summary.textContent = count
+    ? `${count} de 3 arquivo${count > 1 ? "s" : ""} selecionado${count > 1 ? "s" : ""}.`
+    : "Nenhum arquivo selecionado.";
+
+  list.innerHTML = "";
+  selectedBankStatements.forEach((file, index) => {
+    const item = document.createElement("div");
+    item.className = "selected-file-item";
+
+    const name = document.createElement("span");
+    name.className = "selected-file-name";
+    name.textContent = `✓ ${file.name}`;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "selected-file-remove";
+    remove.textContent = "Remover";
+    remove.setAttribute("aria-label", `Remover ${file.name}`);
+    remove.addEventListener("click", () => {
+      selectedBankStatements.splice(index, 1);
+      renderBankStatementList();
+    });
+
+    item.append(name, remove);
+    list.appendChild(item);
+  });
+}
+
+function setupBankStatementPicker() {
+  const input = document.querySelector("#bankStatementsInput");
+  if (!input) return;
+
+  input.addEventListener("change", () => {
+    const incoming = Array.from(input.files || []);
+    const invalid = incoming.find(file => file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf"));
+    if (invalid) {
+      setStatus(submitStatus, "error", "Os extratos bancários devem ser enviados somente em PDF. Não envie prints ou fotos.");
+      input.value = "";
+      return;
+    }
+
+    const known = new Set(selectedBankStatements.map(bankStatementKey));
+    for (const file of incoming) {
+      if (selectedBankStatements.length >= 3) break;
+      const key = bankStatementKey(file);
+      if (!known.has(key)) {
+        selectedBankStatements.push(file);
+        known.add(key);
+      }
+    }
+
+    if (incoming.length && selectedBankStatements.length >= 3) {
+      clearStatus(submitStatus);
+    }
+
+    input.value = "";
+    renderBankStatementList();
+  });
+
+  renderBankStatementList();
 }
 
 function renderDocumentFields(productKey) {
+  selectedBankStatements = [];
+
   if (productKey === "clt") {
     documentFields.innerHTML =
       uploadField("identidade", "RG ou CNH") +
       uploadField("residencia", "Comprovante de residência") +
       uploadField("holerite", "Holerite") +
       bankStatementsField();
+    setupBankStatementPicker();
     return;
   }
 
@@ -426,6 +505,7 @@ function renderDocumentFields(productKey) {
         ? uploadField("identidadeRepresentante", "RG ou CNH do representante") +
           uploadField("representacao", "Documento que comprove a representação")
         : "");
+    setupBankStatementPicker();
     return;
   }
 
@@ -435,6 +515,7 @@ function renderDocumentFields(productKey) {
       uploadField("residencia", "Comprovante de residência") +
       uploadField("beneficio", "Extrato ou comprovante do benefício Bolsa Família") +
       bankStatementsField();
+    setupBankStatementPicker();
     return;
   }
 
@@ -442,14 +523,11 @@ function renderDocumentFields(productKey) {
 }
 
 function validateBankStatements() {
-  const input = document.querySelector('input[name="extratos"]');
-  const files = Array.from(input?.files || []);
-
-  if (files.length < 1 || files.length > 3) {
+  if (selectedBankStatements.length < 1 || selectedBankStatements.length > 3) {
     return "Envie de 1 a 3 extratos bancários em PDF que cubram os últimos 90 dias.";
   }
 
-  if (files.some(file => file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf"))) {
+  if (selectedBankStatements.some(file => file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf"))) {
     return "Os extratos bancários devem ser enviados somente em PDF. Não envie prints ou fotos.";
   }
 
@@ -602,6 +680,8 @@ applicationForm.addEventListener("submit", async (event) => {
 
   try {
     const formData = new FormData(applicationForm);
+    formData.delete("extratos");
+    selectedBankStatements.forEach(file => formData.append("extratos", file, file.name));
 
     const response = await fetch("/api/submit", {
       method: "POST",
